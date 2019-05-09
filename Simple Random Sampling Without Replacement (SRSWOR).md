@@ -11,7 +11,7 @@ Reference:
 
 ## Notation
 
-![](https://i.imgur.com/0ZRKMJk.png)
+![01](https://i.imgur.com/0ZRKMJk.png)
 
 
 ## Estimation of population mean
@@ -20,33 +20,33 @@ Reference:
 
 假設 $t_i$ 代表第i組樣本平均數 $\overline{y}_i$，則$E(\overline{y})$ 為 ${C^N_n}$ 個t的平均數。
 
-![](https://i.imgur.com/DjlrZ5j.png)
+![02](https://i.imgur.com/DjlrZ5j.png)
 
 從N個母體當中不重複抽出n個樣本，形成的所有組合中。 任何一個母體單元出現的個數為$C^{N-1}_{n - 1}$ (排列組合：包含某特定樣本的所有組合)。也可以換個角度想，兩個summatio展開後，出現y的總個數為${C^N_n} * n$，我們又知道每個y的出現次數應該相同，因此平均分給N個樣本則得到${C^N_n} * n / N = C^{N-1}_{n - 1}$。
 
 有了樣本平均跟母體平均的關聯後，便能求得樣本平均的期望值剛好也是母體平均，因此樣本平均同時也是母體平均的不偏估計量。
 
-![](https://i.imgur.com/lWsctV1.png)
+![03](https://i.imgur.com/lWsctV1.png)
 
-![](https://i.imgur.com/3eBgLKv.png)
+![04](https://i.imgur.com/3eBgLKv.png)
 
 
 ## Variance of the estimate
 
-![](https://i.imgur.com/tDKdjfM.png)
+![05](https://i.imgur.com/tDKdjfM.png)
 
 樣本平均的變異數根據定義展開後，最終得到S跟K的函式。
 
 - 大寫S是用母體算得的，並不是傳統的樣本變異數
 - K中summation的上標都是小寫n，需要做一些換算取得跟大寫N的關聯。
 
-![](https://i.imgur.com/DlDTaL5.png)
+![06](https://i.imgur.com/DlDTaL5.png)
 
 有了K跟S的關聯後
 
 併入樣本平均的變異數中，求得：
 
-![](https://i.imgur.com/BdSpvPr.png)
+![07](https://i.imgur.com/BdSpvPr.png)
 
 - 再重申，S為母體的參數變換而來的，真實情境中並不知道母體，所以欲求得樣本平均的變異數，還需要對S再做估計。
 
@@ -59,17 +59,17 @@ Reference:
 假設我們都認同當母體N非常大的話，正常的樣本平均變異數 s^2 的公式如下面所述。
 當我們對 s^2 取期望值，若能發現跟 S^2 有某種關聯，我們就能將 s^2 做一些轉換後，估計出S^2。
 
-![](https://i.imgur.com/o0hlnGv.png)
+![08](https://i.imgur.com/o0hlnGv.png)
 
 ### In case of SRSWOR
 
-![](https://i.imgur.com/ICqiUDs.png)
+![09](https://i.imgur.com/ICqiUDs.png)
 
 最終得到 E(s^2) = S^2 ，換句話說 s^2 剛好就是 S^2 的不偏估計量
 
 再代回Variance of the estimate中推演過的樣本變異數中，便得到：
 
-![](https://i.imgur.com/GrAdFX6.png)
+![10](https://i.imgur.com/GrAdFX6.png)
 
 
 ## Test Code
@@ -99,6 +99,6 @@ def plot_decline_variance_in_srswor(sample_variance, total_num):
 下圖為假設不論樣本多少，s^2 都是10，且母體總數為100。
 在SRSWOR情境下的實際樣本平均變異數為。
 
-![](https://i.imgur.com/8bjQpcs.png)
+![11](https://i.imgur.com/8bjQpcs.png)
 
 x軸代表取樣的數量，間隔為5，大約1成的樣本數就足以讓真實的變異數衰退到傳統變異數的一成以下了。
