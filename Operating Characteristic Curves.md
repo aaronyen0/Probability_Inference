@@ -19,15 +19,15 @@ lot acceptance</font> versus <font color="blue">the lot proportion defective </f
 - Pa (Probability of Acceptance)：給定特定母體(N,K)下，並滿足特定抽樣條件(n,c)的機率：
     - Pa = P(X <= c), where X ~ 某個分配
         - X ~ Hypergeometric(N, K, n)：通常母體N數量不大的情況下，給定抽取樣本數n，則X滿足超幾何分配。
-        - X ~ Binomial(n, p)：若母體N總數很大且 n << N，上式近似為二項式分布。
+        - X ~ Binomial(n, p)：若母體N總數很大且 n << N，上式近似為二項式分布，值得注意的是，二項分佈和母體數N沒有關聯。
 
 ## Operating Characteristic Curves
 
 ![](https://i.imgur.com/EXMx6YP.png)
 
-圖中不同顏色的曲線，各自代表一個抽樣方法被acceptance的機率，其中x軸為假設實際的瑕疵率為p的話。而曲線表示一種特定抽樣標準，定義為：
+圖中不同顏色的曲線，各自代表一個抽樣方法，定義為：
 
-&emsp;&emsp;從母體N中，抽取n個樣本，並限定樣本中最大瑕疵數不得超過c。當實際的瑕疵數K(或瑕疵比例p)為某個值時，這個抽樣方法會被acceptance的機率。
+從母體N中，抽取n個樣本，並限定樣本中最大瑕疵數不得超過c。當實際的瑕疵數K(或瑕疵比例p)為某個值時，這個抽樣方法會被acceptance的機率。
 
 若以圖中藍線為例子，則：
 - N = 500
