@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import matplotlib.pyplot as plt    
 import numpy as np
 
@@ -9,101 +10,107 @@ def nchoosek(n, k):
     
 
 class HyperGeometric:
-    """
-    gen a HyperGeometric random variable
-    """
-    def __init__(self, total_num, total_false_num):
-        if total_num < total_false_num:
-            return
-        
-        self.total_num = total_num
-        self.total_false_num = total_false_num
-        self.total_true_num = total_num - total_false_num
+    def __init__(self, N, K, n):
+        self.N = N
+        self.K = K
+        self.n = n
+        self.L = N - K
+        self.lower_limit = max(0, n - self.L)
+        self.upper_limit = min(n, K)
     
-    def reset_total_false_num(self, total_false_num):
-        if total_false_num > self.total_num:
-            return
-        self.total_false_num = total_false_num
-        self.total_true_num = self.total_num - total_false_num
     
-    def pdf(self, sample_num, false_sample_num):
-        true_sample_num = sample_num - false_sample_num
-        false_cnt = nchoosek(self.total_false_num, false_sample_num)
-        true_cnt = nchoosek(self.total_true_num, true_sample_num)
-        total_cnt = nchoosek(self.total_num, sample_num) 
-        return false_cnt * true_cnt / total_cnt
+    def __new__(cls,  N, K, n):
+        if N < K or N < n:
+            return None        
+        else:
+            return object.__new__(cls)
+    
+    
+    def reset_parameters(self, N, K, n):
+        if N < K or N < n:
+            return False        
+        self.N = N
+        self.K = K
+        self.n = n
+        self.L = N - K
+        self.lower_limit = max(0, n - self.L)
+        self.upper_limit = min(n, K)
+        return True
+    
+    def pdf(self, unit_num):
+        if unit_num > self.upper_limit or unit_num < self.lower_limit:
+            return 0.0
         
-    def cdf(self, sample_num, threshold):
+        K_cnt = nchoosek(self.K, unit_num)
+        L_cnt = nchoosek(self.L, self.n - unit_num)
+        total_cnt = nchoosek(self.N, self.n) 
+        return K_cnt * L_cnt / total_cnt
+
+        
+    def cdf(self, threshold):
         """
-        Compute P(X <= threshold) where X is HyperGeometric Distribution with:
-            1. total unit number = self.total_num
-            2. total false number = self.total_false_num
-            3. total sample number = sample_num
+        Compute P(X <= threshold) where X ~ HyperGeometric(N,K,n) :
+            1. N = self.N
+            2. K = self.K
+            3. n = self.n
             
         Args:
-            sample_num(int): sample number of X
-            threshold(int): the upper bound of the X in computing cdf
+            threshold(int): a limit that X can't greater than the threshold 
             
         Returns:
-            prob(float): cumulative probability which equals to P(X <= threshold)
+            prob(float): cumulative probability: P(X <= threshold)
         """
-        if threshold > sample_num or sample_num > self.total_num:
-            return None
+        if threshold >= self.upper_limit:
+            return 1.0
         
-        min_false_num = max(0, self.total_false_num + sample_num - self.total_num)
-        max_false_num = min(threshold, self.total_false_num, sample_num)
+        if threshold < self.lower_limit:
+            return 0.0
+
         prob = 0.0
-        #print("\n", threshold, self.total_false_num, sample_num)
-        for i in range(min_false_num, max_false_num + 1):
-            prob += self.pdf(sample_num, i)
-            #print(i, self.pdf(sample_num, i))
-        #print(prob)
+        for i in range(self.lower_limit, threshold + 1):
+            prob += self.pdf(i)
+
         return prob
 
-class OCCurve:
-    """
-    a tool to gen operating characteristic curve.
-    """
-    def __init__(self, total_num):
-        self.total_num = total_num
+
+class OCCurveEngine:
+    def __init__(self, population_num):
+        self.population_num = population_num
         
-    def print_oc_curve(self, n, c, opt = '.r'):
-        hg = HyperGeometric(self.total_num, 0)
-        X0 = np.arange(0, 0.5, 0.01)
-        Y0 = np.zeros(len(X0))
+    def get_oc_curve(self, sample_num, limit_num):
+        hg = HyperGeometric(self.population_num, 0, sample_num)
+        if hg == None:
+            return None
+        x = np.arange(0, 0.5, 0.01)
+        y = np.zeros(len(x))
         
-        for i in range(len(X0)):
-            hg.reset_total_false_num(int(round(X0[i] * self.total_num)))
-            Y0[i] = hg.cdf(n, c)
-            
-        plt.plot(X0, Y0, opt)
+        for i in range(len(x)):
+            hg.reset_parameters(self.population_num, int(round(x[i] * self.population_num)), sample_num)
+            y[i] = hg.cdf(limit_num)
+        
+        return {'population_num':self.population_num, 'sample_num':sample_num, 'limit_num':limit_num, 'defect_proportion':x, 'probability_of_acceptance':y}
+        
+    def plot_oc_curve(self, oc_curve, color = 'red', linestyle = ':'):
+        if oc_curve == None:
+            return
+        plt.plot(oc_curve['defect_proportion'], oc_curve['probability_of_acceptance'], color = color, linestyle = linestyle)
+        
+        
+def show_task1(population_num = 500, sample_num = 50):
+    oc_curve_eng = OCCurveEngine(population_num)
+    limit_lt = [0,1,2,3,4,5]
+    color_lt = ['red', 'green', 'blue', 'coral', 'gray', 'purple']
+    for i in range(len(color_lt)):
+        curve = oc_curve_eng.get_oc_curve(sample_num, limit_lt[i])
+        oc_curve_eng.plot_oc_curve(curve, color = color_lt[i])
     
-    def gen_oc_curve_dict(self, sample_num, acpt_num, opt = '.r'):
-        return {'sample_num': sample_num, 'acpt_num': acpt_num, 'opt': opt}
-        
-    def series_oc_curve1(self, sample_num):
-        curve_lt = []
-        curve_lt.append(self.gen_oc_curve_dict(sample_num, 1, '.r'))
-        curve_lt.append(self.gen_oc_curve_dict(sample_num, 2, '.b'))
-        curve_lt.append(self.gen_oc_curve_dict(sample_num, 3, '.g'))
-        curve_lt.append(self.gen_oc_curve_dict(sample_num, 4, '.y'))
-        curve_lt.append(self.gen_oc_curve_dict(sample_num, 5, '.k'))
-        
-        for i in range(len(curve_lt)):
-             self.print_oc_curve(curve_lt[i]['sample_num'], curve_lt[i]['acpt_num'], curve_lt[i]['opt'])
-        
-    def series_oc_curve2(self, acpt_num):
-        curve_lt = []
-        curve_lt.append(self.gen_oc_curve_dict(10, acpt_num, '.r'))
-        curve_lt.append(self.gen_oc_curve_dict(30, acpt_num, '.b'))
-        curve_lt.append(self.gen_oc_curve_dict(50, acpt_num, '.g'))
-        curve_lt.append(self.gen_oc_curve_dict(70, acpt_num, '.y'))
-        curve_lt.append(self.gen_oc_curve_dict(90, acpt_num, '.k'))
-        
-        for i in range(len(curve_lt)):
-             self.print_oc_curve(curve_lt[i]['sample_num'], curve_lt[i]['acpt_num'], curve_lt[i]['opt'])
- 
-def test1(num):
-    t1 = OCCurve(num)  
-    t1.series_oc_curve1(50)
+    hg = HyperGeometric(population_num, int(round(0.05 * population_num)), sample_num)        
+    for i in range(len(limit_lt)):
+        y = hg.cdf(limit_lt[i])
+        if y > 0.6:
+            plt.plot(0.05, y, '*r')
+        else:
+            plt.plot(0.05, y, '*k')
     
+    plt.grid()
+    plt.show()    
